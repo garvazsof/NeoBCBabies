@@ -1,0 +1,20 @@
+{
+  "name": "bcbabies",
+  "version": "1.0.0",
+  "description": "Blockchain project to save fingerprints of newborns and link their ID to parents, allowing track of ID to the hospital where the babies were born.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "starts": "nodemon server.js"
+  },
+  "author": "Luis Garcia, NEORIS",
+  "license": "MIT",
+  "dependencies": {
+    "truffle-contract": "^3.0.6",
+    "web3": "^1.0.0-beta.26"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  }
+}
