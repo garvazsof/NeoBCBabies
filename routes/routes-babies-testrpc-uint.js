@@ -24,7 +24,7 @@ var appRouter = function (app) {
                 users.push({
                     firstName: "Miguel Angel",
                     email: "miguel@email.com",
-                    defaultAccount: result[0],
+                    // defaultAccount: result[0],
                     id:num,
                     name: req.params.name
                 });
