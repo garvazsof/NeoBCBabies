@@ -121,6 +121,25 @@ var appRouter = function (app) {
         });
     });
 
+    app.post("/API/babies/registerV2/", function(req, res) {
+        var babies = [];
+        var strRegisteredName = req.body.registeredName;
+        var uintBabyHashFingerprint = req.body.babyHashFingerprint;
+        var uintMotherHashFingerprint = req.body.motherHashFingerprint;
+        var strMotherName = req.body.motherName;
+        var addrhospitalAddress = req.body.hospitalAddress;
+        var uintGenero = req.body.genero;
+        var uintBirthDay = req.body.birthDay;
+                
+        babies.push({
+            result: "OK",
+            tx: "0x095ff778fc19c1c9f5c7ecb213b4ea285cbf92dce25c8f89018f83276cae37a4"
+        });
+
+        res.status(200).send(babies);
+        
+    });
+
     app.get("/API/babies/getBabyByHashFingerprint/:babyHashFingerprint", function(req, res) {
         var babies = [];
         var babyHashFingerprint = req.params.babyHashFingerprint;
