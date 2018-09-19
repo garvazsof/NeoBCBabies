@@ -139,8 +139,10 @@ var appRouter = function (app) {
                 
         //News IMG:
         //News
-         var strImgMother = req.body.imgMother;
-         var strFatherrName = req.body.imgFather; 
+         var strImgMother = req.body.imgMotherFront;
+         var strImgFather = req.body.imgFatherFront; 
+         var strImgMotherBack = req.body.imgMotherBack;
+         var strImgFatherBack = req.body.imgFatherBack;
 
         babies.push({
             result: "OK",
