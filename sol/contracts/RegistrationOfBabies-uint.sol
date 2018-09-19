@@ -31,7 +31,7 @@ contract RegistrationOfBabies {
         uint timeStamp;
     }
 
-    mapping(uint256 => BabyRegistration) public listOfBabies;  
+    mapping(uint256 => BabyRegistration) private listOfBabies;  
 
     //Dueño de el contrato
     address owner;
@@ -57,7 +57,7 @@ contract RegistrationOfBabies {
         //TODO: require=> validaciones antes de guardar.
         uint _timeStamp = block.timestamp;
 
-        // uint8 indexChild = 0;
+        require(listOfBabies[_babyHashFingerprint].timeStamp == 0, "The baby has already been registered");
 
         _registerBaby(
             _registeredName, _babyHashFingerprint, _motherHashFingerprint, _motherName, _hospitalAddress, 
@@ -100,7 +100,7 @@ contract RegistrationOfBabies {
         return communityName;
     }
 
-    function setCommunityName(string _communityName) public {
+    function setCommunityName(string _communityName) public onlyOwner {
         communityName = _communityName;
     }
 
