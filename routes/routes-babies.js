@@ -2,9 +2,11 @@ var Web3 = require('web3');
 var web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/2UM4W5tzvCJBFTpH0RFB"));
 
 var contractAdd = '0x492ac64c927bd9da956b981228ca839ffb09d8f6';
-var CONTRACT = new web3.eth.Contract([{"constant":true,"inputs":[],"name":"getCommunityName","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"uint256"}],"name":"listOfBabies","outputs":[{"name":"registeredName","type":"string"},{"name":"hashFingerprint","type":"string"},{"name":"mothersAddress","type":"address"},{"name":"hospitalAddress","type":"address"},{"name":"genero","type":"uint8"},{"name":"birthDay","type":"uint256"},{"name":"timeStamp","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_motherAddress","type":"address"}],"name":"getBabyByMotherAddress","outputs":[{"name":"registeredName","type":"string"},{"name":"hashFingerprint","type":"string"},{"name":"hospitalAddress","type":"address"},{"name":"genero","type":"uint8"},{"name":"birthDay","type":"uint256"},{"name":"timeStamp","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_communityName","type":"string"}],"name":"setCommunityName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_registeredName","type":"string"},{"name":"_hashFingerprint","type":"string"},{"name":"_mothersAddress","type":"address"},{"name":"_hospitalAddress","type":"address"},{"name":"_genero","type":"uint8"},{"name":"_birthDay","type":"uint256"}],"name":"registerBaby","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_communityName","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"registeredName","type":"string"},{"indexed":false,"name":"timeStamp","type":"uint256"}],"name":"resultRegister","type":"event"}]);
+var CONTRACT = new web3.eth.Contract([{"constant":false,"inputs":[{"name":"_registeredName","type":"string"},{"name":"_babyHashFingerprint","type":"uint256"},{"name":"_motherHashFingerprint","type":"uint256"},{"name":"_motherName","type":"string"},{"name":"_hospitalAddress","type":"address"},{"name":"_genero","type":"uint8"},{"name":"_birthDay","type":"uint256"}],"name":"registerBaby","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getCommunityName","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"listOfBabies","outputs":[{"name":"registeredName","type":"string"},{"name":"motherHashFingerprint","type":"uint256"},{"name":"motherName","type":"string"},{"name":"hospitalAddress","type":"address"},{"name":"genero","type":"uint8"},{"name":"birthDay","type":"uint256"},{"name":"timeStamp","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_babyHashFingerprint","type":"uint256"}],"name":"getBabyByHashFingerprint","outputs":[{"name":"registeredName","type":"string"},{"name":"motherHashFingerprint","type":"uint256"},{"name":"motherName","type":"string"},{"name":"hospitalAddress","type":"address"},{"name":"genero","type":"uint8"},{"name":"birthDay","type":"uint256"},{"name":"timeStamp","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_communityName","type":"string"}],"name":"setCommunityName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_communityName","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"registeredName","type":"string"},{"indexed":false,"name":"timeStamp","type":"uint256"}],"name":"resultRegister","type":"event"}]);
 CONTRACT.options.address = contractAdd;
-    
+
+var defaultAccount = '0x8e7eb9b1960abfed2e525932a03a15e3f72b8a02';
+
 var appRouter = function (app) {
     
     // -----------------
@@ -21,7 +23,7 @@ var appRouter = function (app) {
                 users.push({
                     firstName: "Miguel Angel",
                     email: "miguel@email.com",
-                    defaultAccount: result[0],
+                    // defaultAccount: result[0],
                     id:num,
                     name: req.params.name
                 });
@@ -38,8 +40,6 @@ var appRouter = function (app) {
     // -----------------
     app.get("/API/babies/getCommunityName/", function(req, res) {
         var babies = [];
-        var defaultAccount = '0xb483fb2160e53ef745c85f6a59781ce8f0ddc323';
-
         CONTRACT.methods.getCommunityName().call(
         {
             from: defaultAccount
@@ -63,30 +63,25 @@ var appRouter = function (app) {
     app.post("/API/babies/setCommunityName/", function(req, res) {
         var babies = [];
         var communityName = req.body.communityName;
-        var defaultAccount = '0xb483fb2160e53ef745c85f6a59781ce8f0ddc323';
-        web3.eth.personal.unlockAccount(defaultAccount, "T3n3k12345*", 600).then(function(){
-            CONTRACT.methods.setCommunityName(communityName).send(
-                {
-                    from: defaultAccount,
-                    gasLimit:3000000,
-                    gas:3000000
-                }
-                ,function(error, result){          
-                    if(!error){
-                        babies.push({
-                            result: "OK",
-                            tx:result
-                        });
-                    }else{
-                        babies.push({
-                            error: error
-                        });
-                    }
-                    res.status(200).send(babies);
-                });
-        });
 
-        
+        CONTRACT.methods.setCommunityName(communityName).send(
+        {
+            from: defaultAccount,
+            gasLimit:3000000,
+            gas:3000000
+        }
+        ,function(error, result){          
+            if(!error){
+                babies.push({
+                    result: "OK"
+                });
+            }else{
+                babies.push({
+                    error: error
+                });
+            }
+            res.status(200).send(babies);
+        });
     });
 
     // -----------------
@@ -95,16 +90,15 @@ var appRouter = function (app) {
     app.post("/API/babies/register/", function(req, res) {
         var babies = [];
         var strRegisteredName = req.body.registeredName;
-        var strHashFingerprint = req.body.hashFingerprint;
-        var addrMothersAddress = req.body.mothersAddress;
+        var uintBabyHashFingerprint = req.body.babyHashFingerprint;
+        var uintMotherHashFingerprint = req.body.motherHashFingerprint;
+        var strMotherName = req.body.motherName;
         var addrhospitalAddress = req.body.hospitalAddress;
         var uintGenero = req.body.genero;
         var uintBirthDay = req.body.birthDay;
                 
-        var defaultAccount = '0xb483fb2160e53ef745c85f6a59781ce8f0ddc323';
-
-        CONTRACT.methods.registerBaby(strRegisteredName, strHashFingerprint, addrMothersAddress, addrhospitalAddress,
-            uintGenero, uintBirthDay).send(
+        CONTRACT.methods.registerBaby(strRegisteredName, uintBabyHashFingerprint, uintMotherHashFingerprint,strMotherName,
+            addrhospitalAddress, uintGenero, uintBirthDay).send(
         {
             from: defaultAccount,
             gasLimit:3000000,
@@ -126,12 +120,30 @@ var appRouter = function (app) {
         });
     });
 
-    app.get("/API/babies/getBabyByMotherAddress/:address", function(req, res) {
+    app.post("/API/babies/registerV2/", function(req, res) {
         var babies = [];
-        var addressMother = req.params.address;
-        var defaultAccount = '0xb483fb2160e53ef745c85f6a59781ce8f0ddc323';
+        var strRegisteredName = req.body.registeredName;
+        var uintBabyHashFingerprint = req.body.babyHashFingerprint;
+        var uintMotherHashFingerprint = req.body.motherHashFingerprint;
+        var strMotherName = req.body.motherName;
+        var addrhospitalAddress = req.body.hospitalAddress;
+        var uintGenero = req.body.genero;
+        var uintBirthDay = req.body.birthDay;
+                
+        babies.push({
+            result: "OK",
+            tx: "0x095ff778fc19c1c9f5c7ecb213b4ea285cbf92dce25c8f89018f83276cae37a4"
+        });
 
-        CONTRACT.methods.getBabyByMotherAddress(addressMother).call(
+        res.status(200).send(babies);
+        
+    });
+
+    app.get("/API/babies/getBabyByHashFingerprint/:babyHashFingerprint", function(req, res) {
+        var babies = [];
+        var babyHashFingerprint = req.params.babyHashFingerprint;
+
+        CONTRACT.methods.getBabyByHashFingerprint(babyHashFingerprint).call(
         {
             from: defaultAccount
         }
@@ -141,7 +153,8 @@ var appRouter = function (app) {
                 babies.push({
                     result: "OK",
                     registeredName: result.registeredName,
-                    hashFingerprint: result.hashFingerprint,
+                    motherHashFingerprint: result.motherHashFingerprint,
+                    motherName: result.motherName,
                     hospitalAddress: result.hospitalAddress,
                     genero: result.genero,
                     birthDay: result.birthDay,
