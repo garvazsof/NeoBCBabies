@@ -126,10 +126,20 @@ var appRouter = function (app) {
         var uintBabyHashFingerprint = req.body.babyHashFingerprint;
         var uintMotherHashFingerprint = req.body.motherHashFingerprint;
         var strMotherName = req.body.motherName;
+        
+        //News
+        var uintFatherHashFingerprint = req.body.fatherHashFingerprint;
+        var strFatherrName = req.body.fatherName;
+
         var addrhospitalAddress = req.body.hospitalAddress;
         var uintGenero = req.body.genero;
         var uintBirthDay = req.body.birthDay;
                 
+        //News IMG:
+        //News
+         var strImgMother = req.body.imgMother;
+         var strFatherrName = req.body.imgFather;
+
         babies.push({
             result: "OK",
             tx: "0x095ff778fc19c1c9f5c7ecb213b4ea285cbf92dce25c8f89018f83276cae37a4"
