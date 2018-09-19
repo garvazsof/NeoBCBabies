@@ -130,7 +130,9 @@ var appRouter = function (app) {
         //News
         var uintFatherHashFingerprint = req.body.fatherHashFingerprint;
         var strFatherrName = req.body.fatherName;
-
+        var strDoctorName = req.body.doctorName;
+        var strCountryCode = req.body.countryCode;
+        
         var addrhospitalAddress = req.body.hospitalAddress;
         var uintGenero = req.body.genero;
         var uintBirthDay = req.body.birthDay;
