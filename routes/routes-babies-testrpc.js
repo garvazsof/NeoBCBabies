@@ -1,3 +1,5 @@
+//Test in RPC with web3
+
 var Web3 = require('web3');
 var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
@@ -9,31 +11,6 @@ var defaultAccount = '0x52018daae84f6194b25e2391c420dca0e9f71c7d';
 
 var appRouter = function (app) {
     
-    // -----------------
-    // SAMPLE
-    // -----------------
-
-    app.get("/API/babies/sample/:id&:name", function(req, res) {
-        var users = [];
-        var num = req.params.id;
-    
-        if (isFinite(num) && num  > 0 ) {
-           
-            web3.eth.getAccounts(function(error, result) {
-                users.push({
-                    firstName: "Miguel Angel",
-                    email: "miguel@email.com",
-                    // defaultAccount: result[0],
-                    id:num,
-                    name: req.params.name
-                });
-                res.status(200).send(users);
-            });
-            // console.log(accounts);
-        } else {
-            res.status(400).send({ message: 'invalid number supplied' }); 
-        }   
-    });
 
     // -----------------
     // COMMUNITY NAME

@@ -22,16 +22,14 @@ contract RegistrationOfBabies {
     //Datos de registro de el bebe
     struct BabyRegistration {
         string registeredName;
-        // uint256 babyHashFingerprint;
-        uint256 motherHashFingerprint;
-        string motherName;
-        address hospitalAddress;
         Genero genero;
         uint birthDay;
         uint timeStamp;
+        string data;
+        address hospitalAddress;      
     }
 
-    mapping(uint256 => BabyRegistration) private listOfBabies;  
+    mapping(bytes32 => BabyRegistration) private listOfBabies;  
 
     //Dueño de el contrato
     address owner;
@@ -51,49 +49,49 @@ contract RegistrationOfBabies {
 	
      //Registro
     function registerBaby(
-        string _registeredName, uint256 _babyHashFingerprint,  uint256 _motherHashFingerprint, string _motherName,
-        address _hospitalAddress, uint8 _genero, uint _birthDay
+        string _registeredName, 
+        bytes32 _babyHashFingerprint,  
+        uint _genero,
+        uint _birthDay,
+        string _data,
+        address _hospitalAddress
     )  public {
         //TODO: require=> validaciones antes de guardar.
         uint _timeStamp = block.timestamp;
 
         require(listOfBabies[_babyHashFingerprint].timeStamp == 0, "The baby has already been registered");
 
-        _registerBaby(
-            _registeredName, _babyHashFingerprint, _motherHashFingerprint, _motherName, _hospitalAddress, 
-            _genero, _birthDay, _timeStamp); 
+        listOfBabies[_babyHashFingerprint] = BabyRegistration({
+            registeredName: _registeredName,
+            genero: Genero(_genero),
+            birthDay: _birthDay,
+            timeStamp: _timeStamp,
+            data: _data,
+            hospitalAddress: _hospitalAddress           
+        });
 
         emit resultRegister(_registeredName, _timeStamp);
     }
 
-    function _registerBaby(
-        string _registeredName, uint256 _babyHashFingerprint,  uint256 _motherHashFingerprint, string _motherName,
-        address _hospitalAddress, uint8 _genero, uint _birthDay, uint _timeStamp 
-    )  private {
     
-        listOfBabies[_babyHashFingerprint] = BabyRegistration({
-            registeredName: _registeredName,
-            // babyHashFingerprint: _babyHashFingerprint,
-            motherHashFingerprint: _motherHashFingerprint,
-            motherName: _motherName,
-            hospitalAddress: _hospitalAddress,
-            genero: Genero(_genero),
-            birthDay: _birthDay,
-            timeStamp: _timeStamp
-        });
-    }
 
-    function getBabyByHashFingerprint(uint256 _babyHashFingerprint) public view returns(string registeredName, uint256 motherHashFingerprint,
-    string motherName, address hospitalAddress, uint8 genero, uint birthDay, uint timeStamp) 
+    function getBabyByHashFingerprint(bytes32 _babyHashFingerprint) public view returns
+    (
+        string _registeredName, 
+        uint _genero,
+        uint _birthDay,
+        uint _timeStamp,
+        string _data,
+        address _hospitalAddress    
+    ) 
     {
         return(
             listOfBabies[_babyHashFingerprint].registeredName, 
-            listOfBabies[_babyHashFingerprint].motherHashFingerprint, 
-            listOfBabies[_babyHashFingerprint].motherName, 
-            listOfBabies[_babyHashFingerprint].hospitalAddress, 
-            uint8(listOfBabies[_babyHashFingerprint].genero), 
-            listOfBabies[_babyHashFingerprint].birthDay,
-            listOfBabies[_babyHashFingerprint].timeStamp);
+            uint(listOfBabies[_babyHashFingerprint].genero),
+            listOfBabies[_babyHashFingerprint].birthDay, 
+            listOfBabies[_babyHashFingerprint].timeStamp, 
+            listOfBabies[_babyHashFingerprint].data,
+            listOfBabies[_babyHashFingerprint].hospitalAddress);
     }
 
     function getCommunityName() public view returns (string){
