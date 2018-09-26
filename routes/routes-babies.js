@@ -19,7 +19,7 @@ var wallet = new ethers.Wallet(privateKey,provider);
 var contract_sign = new ethers.Contract(contractAddress, abi, wallet);
 var contract = new ethers.Contract(contractAddress, abi, provider);
 
-
+//Todas las transacciones, filtrados por address account
 router.get("/babies/transactions/:addressAccount", function(req, res) {
     var babies = [];
     var addressAccount = req.params.addressAccount;
@@ -38,10 +38,23 @@ router.get("/babies/transactions/:addressAccount", function(req, res) {
         }
         res.status(200).send(babies); 
     });
-    
+});
+
+//Detalle de transaccion, filtrado por tx_hash
+router.get("/babies/transactions/detail/:tx_hash", function(req, res) {
+    var babies = [];
+    var tx_hash = req.params.tx_hash;
+    provider.getTransaction(tx_hash).then(function(transaction) {
+        babies.push({
+            result: "OK",
+            transaction: transaction
+        });
+        res.status(200).send(babies); 
+    });
 });
 
 
+//Devuelve el nombre de la institucion
 router.get("/babies/getCommunityName/", function(req, res) {
     var babies = [];
     var callPromise = contract.getCommunityName();
@@ -71,7 +84,7 @@ router.post("/babies/setCommunityName/", function(req, res) {
     });       
 });
 
-
+//Inserta un nuevo registro de Bebes
 router.post("/babies/", function(req, res) {
     var babies = [];
     try
@@ -129,6 +142,7 @@ router.post("/babies/", function(req, res) {
 });
 
 
+//Devuelve el registro del bebe por el hash256
 router.get("/babies/:babyHashFingerprint", function(req, res) {
     var babies = [];
     try {
