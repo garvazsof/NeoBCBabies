@@ -1,4 +1,3 @@
-
 CREATE TABLE public."Rols"
 (
     id integer NOT NULL,
@@ -13,37 +12,49 @@ TABLESPACE pg_default;
 ALTER TABLE public."Rols"
     OWNER to postgres;
 ///////////////////////////////
+
 CREATE TABLE public.registrant
 (
-  idregistrant integer NOT NULL,
-  name character varying(35),
-  lastname character varying(35),
-  secondlastname character varying(35),
-  birthdate date,
-  bcaddress character varying(64),
-  fingerprint bytea,
-  CONSTRAINT registrant_pkey PRIMARY KEY (idregistrant)
+    idregistrant integer NOT NULL,
+    name character varying(35) COLLATE pg_catalog."default",
+    lastname character varying(35) COLLATE pg_catalog."default",
+    secondlastname character varying(35) COLLATE pg_catalog."default",
+    birthdate date,
+    bcaddress character varying(64) COLLATE pg_catalog."default",
+    fingerprint bytea,
+    CONSTRAINT registrant_pkey PRIMARY KEY (idregistrant)
 )
 WITH (
-  OIDS=FALSE
-);
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.registrant
+    OWNER to postgres;
 
 /////////////////////////
-CREATE TABLE public.hospital
+
+CREATE TABLE public."Hospitals"
 (
-  id integer NOT NULL,
-  name character varying(35),
-  rfc character varying(15),
-  registrynumber integer,
-  phone character varying(35),
-  address character varying(60),
-  bcaddress character varying(64),
-  CONSTRAINT hospital_pkey PRIMARY KEY (idhospital)
+    id integer NOT NULL,
+    name character varying(35) COLLATE pg_catalog."default",
+    rfc character varying(15) COLLATE pg_catalog."default",
+    registrynumber numeric(30,0),
+    address character varying(60) COLLATE pg_catalog."default",
+    bcaddress character varying(64) COLLATE pg_catalog."default",
+    phone character varying(35) COLLATE pg_catalog."default",
+    CONSTRAINT hospital_pkey PRIMARY KEY (id)
 )
 WITH (
-  OIDS=FALSE
-);
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public."Hospitals"
+    OWNER to postgres;
+
 //////////////////////////////
+
 
 CREATE TABLE public.customer
 (
@@ -54,7 +65,8 @@ CREATE TABLE public.customer
     password character varying(12) COLLATE pg_catalog."default" NOT NULL,
     email character varying(30) COLLATE pg_catalog."default",
     CONSTRAINT customer_pkey PRIMARY KEY (id),
-    CONSTRAINT customer_identity_key UNIQUE (identity),
+    CONSTRAINT customer_identity_key UNIQUE (identity)
+,
     CONSTRAINT customer_idrol_fkey FOREIGN KEY (idrol)
         REFERENCES public."Rols" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -69,55 +81,72 @@ ALTER TABLE public.customer
     OWNER to postgres;
 
 /////////////////////////////
-CREATE TABLE public.doctor
+
+CREATE TABLE public."Doctors"
 (
-  id integer NOT NULL,
-  id_hospital integer,
-  name character varying(35),
-  lastname character varying(35),
-  secondlastname character varying(35),
-  profesionalid integer,
-  bcaddress character varying(64),
-  CONSTRAINT doctor_pkey PRIMARY KEY (iddoctor),
-  CONSTRAINT doctor_idhospital_fkey FOREIGN KEY (idhospital)
-      REFERENCES public.hospital (idhospital) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION
+    id integer NOT NULL,
+    id_hospital integer,
+    name character varying(35) COLLATE pg_catalog."default",
+    lastname character varying(35) COLLATE pg_catalog."default",
+    secondlastname character varying(35) COLLATE pg_catalog."default",
+    profesionalid numeric(30,0),
+    bcaddress character varying(64) COLLATE pg_catalog."default",
+    CONSTRAINT doctor_pkey PRIMARY KEY (id),
+    CONSTRAINT doctor_idhospital_fkey FOREIGN KEY (id_hospital)
+        REFERENCES public."Hospitals" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
 )
 WITH (
-  OIDS=FALSE
-);
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public."Doctors"
+    OWNER to postgres;
+
 //////////////////////////////
+
 CREATE TABLE public.registry
 (
-  idregistry integer NOT NULL,
-  idregistrant integer,
-  idsecondregistrant integer,
-  idhospital integer,
-  iddoctor integer,
-  fingerprint bytea,
-  hashfingerprint character varying(64),
-  datetime timestamp without time zone,
-  sex character varying(10),
-  address character varying(60),
-  nationality character varying(30),
-  registrantfingerprint bytea,
-  secondregisterfingerprint bytea,
-  CONSTRAINT registry_pkey PRIMARY KEY (idregistry),
-  CONSTRAINT registry_iddoctor_fkey FOREIGN KEY (iddoctor)
-      REFERENCES public.doctor (iddoctor) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT registry_idhospital_fkey FOREIGN KEY (idhospital)
-      REFERENCES public.hospital (idhospital) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT registry_idregistrant_fkey FOREIGN KEY (idregistrant)
-      REFERENCES public.registrant (idregistrant) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT registry_idsecondregistrant_fkey FOREIGN KEY (idsecondregistrant)
-      REFERENCES public.registrant (idregistrant) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION
+    idregistry integer NOT NULL,
+    idregistrant integer,
+    idsecondregistrant integer,
+    idhospital integer,
+    iddoctor integer,
+    fingerprint bytea,
+    hashfingerprint character varying(64) COLLATE pg_catalog."default",
+    datetime timestamp without time zone,
+    sex character varying(10) COLLATE pg_catalog."default",
+    address character varying(60) COLLATE pg_catalog."default",
+    nationality character varying(30) COLLATE pg_catalog."default",
+    registrantfingerprint bytea,
+    secondregisterfingerprint bytea,
+    CONSTRAINT registry_pkey PRIMARY KEY (idregistry),
+    CONSTRAINT registry_iddoctor_fkey FOREIGN KEY (iddoctor)
+        REFERENCES public."Doctors" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT registry_idhospital_fkey FOREIGN KEY (idhospital)
+        REFERENCES public."Hospitals" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT registry_idregistrant_fkey FOREIGN KEY (idregistrant)
+        REFERENCES public.registrant (idregistrant) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT registry_idsecondregistrant_fkey FOREIGN KEY (idsecondregistrant)
+        REFERENCES public.registrant (idregistrant) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
 )
 WITH (
-  OIDS=FALSE
-);
-//////////////////
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE public.registry
+    OWNER to postgres;
+    
+///////////////////////////////////////
 
