@@ -1,30 +1,26 @@
 'use strict'
 var express = require("express");
 var router = express.Router();
-
+var ipfsAPI = require('ipfs-api');
+var config = require("../config");
+// -----------------------------------
+// connect to ipfs daemon API server
+var ipfs = ipfsAPI(config.ipfs.domain, config.ipfs.port, {protocol: config.ipfs.protocol });
+// -----------------------------------
 var ethers = require('ethers');
 var provider = ethers.providers.getDefaultProvider('ropsten');
 var etherscanProvider = new ethers.providers.EtherscanProvider("ropsten");
-
-//Ropsten Addres Contract (DLT Babies)
-var contractAddress  = '0x141a34c1f5751c878226a51645d34785797a6385';
-var abi =  [{"constant":true,"inputs":[],"name":"getCommunityName","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_communityName","type":"string"}],"name":"setCommunityName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_babyHashFingerprint","type":"bytes32"}],"name":"getBabyByHashFingerprint","outputs":[{"name":"_registeredName","type":"string"},{"name":"_genero","type":"uint256"},{"name":"_birthDay","type":"uint256"},{"name":"_timeStamp","type":"uint256"},{"name":"_data","type":"string"},{"name":"_hospitalAddress","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_registeredName","type":"string"},{"name":"_babyHashFingerprint","type":"bytes32"},{"name":"_genero","type":"uint256"},{"name":"_birthDay","type":"uint256"},{"name":"_data","type":"string"},{"name":"_hospitalAddress","type":"address"}],"name":"registerBaby","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_communityName","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"registeredName","type":"string"},{"indexed":false,"name":"timeStamp","type":"uint256"}],"name":"resultRegister","type":"event"}];
-    
-// TODO:  Cuenta de pruebas
-// var addressAccount = '0x8e7eb9b1960abfed2e525932a03a15e3f72b8a02';
-var privateKey = '0x1AF0B7DD30D55DE69303C2DDCF7ABD654EA46AD44B50163307EF425CD8C316C5';
-
+// -----------------------------------
 //wallet para transacciones
-var wallet = new ethers.Wallet(privateKey,provider);
-var contract_sign = new ethers.Contract(contractAddress, abi, wallet);
-var contract = new ethers.Contract(contractAddress, abi, provider);
+var wallet = new ethers.Wallet(config.ethereum.privateKey,provider);
+var contract_sign = new ethers.Contract(config.ethereum.contractAddress, config.ethereum.abi, wallet);
 
 //Todas las transacciones, filtrados por address account
 router.get("/babies/transactions/:addressAccount", function(req, res) {
     var babies = [];
     var addressAccount = req.params.addressAccount;
 
-    etherscanProvider.getHistory(contractAddress).then(function(history) {
+    etherscanProvider.getHistory(config.ethereum.contractAddress).then(function(history) {
         if(history.length > 0)
         {
             for(var i=0; i < history.length; i++){
@@ -57,7 +53,7 @@ router.get("/babies/transactions/detail/:tx_hash", function(req, res) {
 //Devuelve el nombre de la institucion
 router.get("/babies/getCommunityName/", function(req, res) {
     var babies = [];
-    var callPromise = contract.getCommunityName();
+    var callPromise = contract_sign.getCommunityName();
 
     callPromise.then(function(result){
         babies.push({
@@ -68,7 +64,7 @@ router.get("/babies/getCommunityName/", function(req, res) {
     });
 });
     
-
+//Set del nombre de la institucion
 router.post("/babies/setCommunityName/", function(req, res) {
     var babies = [];
     var communityName = req.body.communityName;
@@ -85,7 +81,7 @@ router.post("/babies/setCommunityName/", function(req, res) {
 });
 
 //Inserta un nuevo registro de Bebes
-router.post("/babies/", function(req, res) {
+router.post("/babies/", async function(req, res) {
     var babies = [];
     try
     {
@@ -96,10 +92,36 @@ router.post("/babies/", function(req, res) {
         var addrHospitalAddress = req.body.hospitalAddress;
 
         //TODO: Send to IPFS Server
-        // var strImgMotherFront = req.body.imgMotherFront;
-        // var strImgFatherFront = req.body.imgFatherFront;
-        // var strImgMotherBack = req.body.imgMotherBack;
-        // var strFatherBack = req.body.imgFatherBack;
+        var strImgMotherFront = req.body.imgMotherFront;
+        var strImgFatherFront = req.body.imgFatherFront;
+        var strImgMotherBack = req.body.imgMotherBack;
+        var strFatherBack = req.body.imgFatherBack;
+
+        var buffer_imgMotherFront = new Buffer(strImgMotherFront, 'base64');
+        var buffer_imgFatherFront= new Buffer(strImgFatherFront, 'base64');
+        var buffer_imgMotherBack = new Buffer(strImgMotherBack, 'base64');
+        var buffer_imgFatherBack = new Buffer(strFatherBack, 'base64');
+
+        var files = [
+            {
+            path: "ImgMotherFront",
+            content: buffer_imgMotherFront
+            },
+            {
+                path: "ImgFatherFront",
+                content: buffer_imgFatherFront
+            },
+            {
+                path: "ImgMotherBack",
+                content: buffer_imgMotherBack
+            },
+            {
+                path: "FatherBack",
+                content: buffer_imgFatherBack
+            }
+        ];
+
+        const result_ipfs = await ipfs.files.add(files);
 
         var aData = [{
             motherHashFingerprint: req.body.motherHashFingerprint,
@@ -107,9 +129,11 @@ router.post("/babies/", function(req, res) {
             fatherHashFingerprint: req.body.fatherHashFingerprint,
             fatherName: req.body.fatherName,
             doctorName: req.body.doctorName,
-            countryCode: req.body.countryCode
+            countryCode: req.body.countryCode,
+            ipfs_files: result_ipfs
         }];
         var strData = JSON.stringify(aData); 
+       
 
         contract_sign.getBabyByHashFingerprint(strBabyHashFingerprint).then(function(transaction){
             if(transaction._registeredName == ""){
@@ -164,7 +188,8 @@ router.get("/babies/:babyHashFingerprint", function(req, res) {
                     fatherHashFingerprint: aData[0].fatherHashFingerprint,
                     fatherName: aData[0].fatherName,
                     doctorName: aData[0].doctorName,
-                    countryCode: aData[0].countryCode 
+                    countryCode: aData[0].countryCode,
+                    ipfs_files: aData[0].ipfs_files
                 });
 
             }else{
