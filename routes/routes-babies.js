@@ -8,11 +8,11 @@ var config = require("../config");
 var ipfs = ipfsAPI(config.ipfs.domain, config.ipfs.port, {protocol: config.ipfs.protocol });
 // -----------------------------------
 var ethers = require('ethers');
-var provider = ethers.providers.getDefaultProvider('ropsten');
+// var provider = ethers.providers.getDefaultProvider('ropsten');
 var etherscanProvider = new ethers.providers.EtherscanProvider("ropsten");
 // -----------------------------------
 //wallet para transacciones
-var wallet = new ethers.Wallet(config.ethereum.privateKey,provider);
+var wallet = new ethers.Wallet(config.ethereum.privateKey,etherscanProvider);
 var contract_sign = new ethers.Contract(config.ethereum.contractAddress, config.ethereum.abi, wallet);
 
 //Todas las transacciones, filtrados por address account
